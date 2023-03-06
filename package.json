@@ -1,0 +1,30 @@
+{
+	"name": "restaurant-chatbot",
+	"version": "1.0.0",
+	"description": "Kachi's chatbot",
+	"main": "app.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"start:dev": "nodemon app.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/astrokachi/restaurant-chatbot.git"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/astrokachi/restaurant-chatbot/issues"
+	},
+	"homepage": "https://github.com/astrokachi/restaurant-chatbot#readme",
+	"devDependencies": {
+		"nodemon": "^2.0.21",
+		"ts-node": "^10.9.1",
+		"typescript": "^4.9.5"
+	},
+	"dependencies": {
+		"express": "^4.18.2",
+		"socket.io": "^4.6.1"
+	}
+}
