@@ -1,18 +1,195 @@
 <html lang="en">
-<head>
-   <meta charset="UTF-8">
-   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>Document</title>
-</head>
-<body>
-   <script src="socket.io/socket.io.js"></script>
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Document</title>
+		<!-- 
+		<script
+			src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+			integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
+			crossorigin="anonymous"
+		></script>
+		<script src="script.js" defer></script> 
+   -->
+		<style>
+			* {
+				margin: 0;
+			}
+			body {
+				position: relative;
+				height: 100vh;
+			}
+			.container {
+				height: 100%;
+				display: flex;
+				flex-direction: column;
+				padding: 0px 12px;
+			}
+			.message-box {
+				/* position: absolute; */
+				bottom: 0;
+				width: 80%;
+				display: flex;
+				margin: 0px auto;
+				gap: 10px;
+				margin-bottom: 10px;
+			}
 
-   <script>
-      const socket = io();
-      
-   </script>
-   
-   <p>Hey there!</p>
-</body>
+			input {
+				flex-grow: 1;
+				width: max-content;
+				outline: none;
+			}
+
+			.display-texts {
+				margin: 0px auto;
+				margin-top: 10px;
+				flex-grow: 1;
+				max-width: 700px;
+				width: 100%;
+				height: 100%;
+				overflow-y: scroll;
+			}
+			.bot-message-container,
+			.my-message-container {
+				width: 100%;
+				position: relative;
+				display: flex;
+				flex-direction: column;
+				padding: 3px 0px;
+			}
+			.my-message-container {
+				align-items: end;
+			}
+			.bot-message {
+				color: #fff;
+				padding: 2px 8px;
+				border-radius: 6px;
+				background-color: burlywood;
+				max-width: 200px;
+			}
+			.my-message {
+				color: #fff;
+				padding: 2px 8px;
+				border-radius: 6px;
+				background-color: blueviolet;
+				max-width: 200px;
+			}
+		</style>
+		<!--  -->
+	</head>
+	<body>
+		<script src="socket.io/socket.io.js"></script>
+		<!--  -->
+		<script src="socket.io/socket.io.js"></script>
+
+		<div class="container">
+			<div class="display-texts">
+				<div class="bot-message-container">
+					<!-- <p class="bot-message">This is a text</p> -->
+				</div>
+				<div class="my-message-container">
+					<!-- <p class="my-message">Yes it is</p>
+					<div class="my-message">HI there</div> -->
+				</div>
+			</div>
+			<div class="message-box">
+				<label for="message">Message</label>
+				<input name="message" type="number" min="0" />
+				<!-- <button>send</button> -->
+			</div>
+		</div>
+		<script>
+			const socket = io();
+			const displayTexts = document.querySelector(".display-texts");
+			const button = document.querySelector("button");
+			const messageBox = document.querySelector(".message-box");
+			let btn;
+
+			class MyMessage {
+				constructor(text) {
+					this.text = text;
+					this.newMessage = document.createElement("div");
+					this.messageContainer = document.createElement("div");
+					displayTexts.append(this.createNewMessageEl());
+				}
+
+				createNewMessageEl() {
+					this.newMessage.classList.add("my-message");
+					this.messageContainer.classList.add("my-message-container");
+					this.newMessage.innerHTML = this.text;
+					this.messageContainer.appendChild(this.newMessage);
+					return this.messageContainer;
+				}
+			}
+
+			class BotMessage {
+				constructor(text) {
+					this.text = text;
+					this.newMessage = document.createElement("div");
+					this.messageContainer = document.createElement("div");
+					displayTexts.append(this.createNewMessageEl());
+				}
+
+				createNewMessageEl() {
+					this.newMessage.classList.add("bot-message");
+					this.messageContainer.classList.add("bot-message-container");
+					this.newMessage.innerHTML = this.text;
+					this.messageContainer.appendChild(this.newMessage);
+					return this.messageContainer;
+				}
+			}
+
+			class Button {
+				constructor(sendMessage, val) {
+					this.newButton = document.createElement("button");
+					this.newButton.innerHTML = "send";
+					messageBox.appendChild(this.newButton);
+					this.newButton.addEventListener("click", () => {
+						sendMessage(val);
+					});
+				}
+
+				deleteButton() {
+					messageBox.removeChild(this.newButton);
+				}
+			}
+			socket.on("connect", () => {
+				let text = `
+				<div>Hello, welcome to the restaurant. What can I do for you?</div>
+			      	<div>Select 1 to Place an order</div>
+			         <div>Select 99 to checkout order</div>
+			         <div>Select 98 to see order history</div>
+			         <div>Select 97 to see current order</div>
+			         <div>Select 0 to cancel order</div>`;
+
+				btn = new Button(sendMessage, "message");
+				new BotMessage(text);
+			});
+
+			function sendMessage(val) {
+				const value = document.querySelector("input").value;
+				console.log(val, +value);
+				new MyMessage(value);
+				socket.emit(val, +value);
+			}
+
+			socket.on("place an order", (foods) => {
+				let text = "";
+				foods.forEach((food, i) => {
+					text += `<div>${i + 1}. ${food}</div>`;
+				});
+				addNewButton(sendMessage, "add order");
+				new BotMessage(text);
+				// addNewButton(sendMessage, "message");
+			});
+
+			function addNewButton(sendMessage, val) {
+				btn.deleteButton();
+				btn = new Button(sendMessage, val);
+			}
+		</script>
+		<!--  -->
+	</body>
 </html>
