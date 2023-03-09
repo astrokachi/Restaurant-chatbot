@@ -41,6 +41,8 @@ io.on("connect", (socket) => {
         else if (message == 99) {
             if (currentOrder.length > 0) {
                 orderHistory.push(currentOrder);
+                currentOrder = "";
+                socket.emit("order placed", "order placed");
             }
             else {
                 socket.emit("no order", "No order to place");
@@ -48,10 +50,16 @@ io.on("connect", (socket) => {
         }
         else if (message == 98) {
             if (orderHistory.length > 0) {
-                socket.emit("all placed orders", orderHistory);
+                socket.emit("return checkout history", {
+                    orderHistory: orderHistory,
+                    currentOrder: currentOrder,
+                });
             }
             else {
-                socket.emit("no history", "You haven't made any order yet");
+                socket.emit("no history", {
+                    message: "You haven't completed any checkout yet",
+                    currentOrder: currentOrder,
+                });
             }
         }
         else if (message == 97) {
@@ -59,20 +67,31 @@ io.on("connect", (socket) => {
         }
         else if (message == 0) {
             currentOrder = "";
+            socket.emit('cancel order');
         }
         else {
-            socket.emit("invalid input", "Please enter a valid input");
-            console.log("end");
+            invalid(socket);
         }
     });
     socket.on("add order", (value) => {
         const current = foods.filter((food, i) => value === i + 1)[0];
-        if (currentOrder.length > 0) {
-            currentOrder += `, ${current}`;
+        if (current) {
+            if (currentOrder.length > 0) {
+                currentOrder += `, ${current}`;
+            }
+            else {
+                currentOrder += current;
+            }
+            socket.emit("order added");
+            socket.emit("restart", currentOrder);
+            console.log(currentOrder);
         }
         else {
-            currentOrder += current;
+            invalid(socket);
         }
-        console.log(currentOrder);
     });
 });
+function invalid(socket) {
+    socket.emit("invalid input", "Please enter a valid input");
+    socket.emit("restart", currentOrder);
+}

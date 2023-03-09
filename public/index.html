@@ -29,11 +29,12 @@
 			.message-box {
 				/* position: absolute; */
 				bottom: 0;
-				width: 80%;
+				width: 100%;
 				display: flex;
 				margin: 0px auto;
 				gap: 10px;
 				margin-bottom: 10px;
+				max-width: 700px;
 			}
 
 			input {
@@ -58,23 +59,40 @@
 				display: flex;
 				flex-direction: column;
 				padding: 3px 0px;
+				animation: message;
+				animation-duration: 300ms;
 			}
 			.my-message-container {
 				align-items: end;
 			}
-			.bot-message {
-				color: #fff;
-				padding: 2px 8px;
-				border-radius: 6px;
-				background-color: burlywood;
-				max-width: 200px;
-			}
+			.bot-message,
 			.my-message {
 				color: #fff;
-				padding: 2px 8px;
-				border-radius: 6px;
-				background-color: blueviolet;
+				padding: 7px 12px;
+				border-radius: 16px;
+				background-color: darkcyan;
+				width: max-content;
 				max-width: 200px;
+			}
+			.bot-message {
+				border-bottom-left-radius: 0px;
+			}
+			.my-message {
+				border-bottom-right-radius: 0px;
+				background-color: blueviolet;
+			}
+
+			.display-texts::-webkit-scrollbar {
+				display: none;
+			}
+			@keyframes message {
+				from {
+					/* margin-left: -50px; */
+					margin-top: 50px;
+				}
+				to {
+					margin: unset;
+				}
 			}
 		</style>
 		<!--  -->
@@ -86,24 +104,17 @@
 
 		<div class="container">
 			<div class="display-texts">
-				<div class="bot-message-container">
-					<!-- <p class="bot-message">This is a text</p> -->
-				</div>
-				<div class="my-message-container">
-					<!-- <p class="my-message">Yes it is</p>
-					<div class="my-message">HI there</div> -->
-				</div>
+				<div class="bot-message-container"></div>
+				<div class="my-message-container"></div>
 			</div>
-			<div class="message-box">
+			<form class="message-box">
 				<label for="message">Message</label>
 				<input name="message" type="number" min="0" />
-				<!-- <button>send</button> -->
-			</div>
+			</form>
 		</div>
 		<script>
 			const socket = io();
 			const displayTexts = document.querySelector(".display-texts");
-			const button = document.querySelector("button");
 			const messageBox = document.querySelector(".message-box");
 			let btn;
 
@@ -113,6 +124,7 @@
 					this.newMessage = document.createElement("div");
 					this.messageContainer = document.createElement("div");
 					displayTexts.append(this.createNewMessageEl());
+					
 				}
 
 				createNewMessageEl() {
@@ -130,6 +142,10 @@
 					this.newMessage = document.createElement("div");
 					this.messageContainer = document.createElement("div");
 					displayTexts.append(this.createNewMessageEl());
+					displayTexts.scrollTo({
+						behavior: "smooth",
+						top: 100000000,
+					});
 				}
 
 				createNewMessageEl() {
@@ -156,16 +172,7 @@
 				}
 			}
 			socket.on("connect", () => {
-				let text = `
-				<div>Hello, welcome to the restaurant. What can I do for you?</div>
-			      	<div>Select 1 to Place an order</div>
-			         <div>Select 99 to checkout order</div>
-			         <div>Select 98 to see order history</div>
-			         <div>Select 97 to see current order</div>
-			         <div>Select 0 to cancel order</div>`;
-
-				btn = new Button(sendMessage, "message");
-				new BotMessage(text);
+				createFreshStart();
 			});
 
 			function sendMessage(val) {
@@ -175,6 +182,10 @@
 				socket.emit(val, +value);
 			}
 
+			socket.on("restart", (currentOrder) => {
+				createFreshStart(currentOrder);
+			});
+
 			socket.on("place an order", (foods) => {
 				let text = "";
 				foods.forEach((food, i) => {
@@ -182,12 +193,79 @@
 				});
 				addNewButton(sendMessage, "add order");
 				new BotMessage(text);
-				// addNewButton(sendMessage, "message");
+			});
+
+			socket.on("invalid input", (message) => {
+				new BotMessage(message);
+			});
+
+			socket.on("order placed", (message) => {
+				handleOrderPlacing(message);
+			});
+			socket.on("no order", (message) => {
+				handleOrderPlacing(message);
+			});
+
+			socket.on("return checkout history", (res) => {
+				let message = "<div>Your checkout history: </div>";
+				res.orderHistory.forEach((order, i) => {
+					message += `<div>${i + 1}. ${order}</div>`;
+				});
+
+				new BotMessage(message);
+				createFreshStart(res.currentOrder);
+			});
+
+			socket.on("no history", (res) => {
+				new BotMessage(res.message);
+				createFreshStart(res.currentOrder);
+			});
+
+			socket.on("current order", (currentOrder) => {
+				if (currentOrder.length > 0) {
+					let message = `<div>Your current order is: <div>${currentOrder}</div> </div>`;
+					new BotMessage(message);
+					createFreshStart(currentOrder);
+				} else {
+					new BotMessage(`You haven't placed an order yet`);
+					createFreshStart(null);
+				}
+			});
+
+			socket.on("cancel order", () => {
+				new BotMessage("Order cancelled");
+				createFreshStart(null);
 			});
 
 			function addNewButton(sendMessage, val) {
 				btn.deleteButton();
 				btn = new Button(sendMessage, val);
+			}
+
+			function handleOrderPlacing(message) {
+				new BotMessage(message);
+				createFreshStart(null);
+			}
+
+			messageBox.addEventListener("submit", (e) => e.preventDefault());
+			function createFreshStart(currentOrder) {
+				let text = `
+				${
+					currentOrder && currentOrder.length > 0
+						? `<div>You have a pending checkout, would you like to add more orders or checkout?</div>`
+						: "<div>Hello, welcome to the restaurant. What can I do for you?</div>"
+				}
+			      	<div>Select 1 to Place an order</div>
+			         <div>Select 99 to checkout order</div>
+			         <div>Select 98 to see order history</div>
+			         <div>Select 97 to see current order</div>
+			         <div>Select 0 to cancel order</div>`;
+				if (btn) {
+					addNewButton(sendMessage, "message");
+				} else {
+					btn = new Button(sendMessage, "message");
+				}
+				new BotMessage(text);
 			}
 		</script>
 		<!--  -->
