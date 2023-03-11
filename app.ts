@@ -21,6 +21,10 @@ const store = new MongoStore({
 	collection: "sessions",
  });
 
+ store.on("error", function (error: string) {
+	console.log(error);
+ });
+
 const sessionMiddleware = session({
 	secret: process.env.SECRET,
 	resave: false,
