@@ -8,38 +8,34 @@ const app = express();
 const http = require("http");
 const server = http.createServer(app);
 //initialize io
-const io: Socket = require("socket.io")(server, { cors: { origin: "*" } });
+const io: Socket | any = require("socket.io")(server, {
+	cors: { origin: "*" },
+});
 const path = require("path");
-
-let orderHistory: string[] = [];
-let currentOrder = "";
 
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use(
-	session({
-		secret: process.env.SECRET,
-		resave: false,
-		saveUninitialized: true,
-	})
-);
-
-app.get("/", (req: any, res: any) => {
-	orderHistory = req.session.history;
-	currentOrder = req.session.current;
-	res.send("index.html");
+const sessionMiddleware = session({
+	secret: process.env.SECRET,
+	resave: false,
+	saveUninitialized: true,
+	cookie: {
+		_expires: 60 * 60 * 24,
+	},
 });
 
-app.post("/", (req: any, res: any) => {
-	req.session.history = orderHistory;
-	req.session.current = currentOrder;
-	res.send('updated');
+io.engine.use(sessionMiddleware);
+
+app.get("/", (req: any, res: any) => {
+	res.send("index.html");
 });
 
 server.listen(3000, () => {
 	console.log("server is listening on port", 3000);
 });
 
+let orderHistory: string[] = [];
+let currentOrder = "";
 // do an api call to return random list of foods
 const foods = [
 	"Curry rice",
@@ -55,8 +51,16 @@ const foods = [
 ];
 // const swallow = ["Eba", "Pounded yam", "Semo"];
 // const soups = ["Efo riro", "Ewedu", "Egusi", "Oha"];
-io.on("connect", (socket) => {
+io.on("connect", (socket: any) => {
 	console.log("Someone connected!", socket.id);
+
+	const sessionData = socket.request.session;
+
+	currentOrder = sessionData.current ? sessionData.current : currentOrder;
+	orderHistory = sessionData.history ? sessionData.history : orderHistory;
+	console.log(currentOrder, orderHistory);
+
+	// console.log(sessionData);
 	socket.emit("check existing data", currentOrder);
 
 	socket.on("message", (message: number) => {
@@ -67,6 +71,7 @@ io.on("connect", (socket) => {
 				orderHistory.push(currentOrder);
 
 				currentOrder = "";
+				save(sessionData);
 				socket.emit("order placed", "order placed");
 			} else {
 				socket.emit("no order", "No order to place");
@@ -87,6 +92,7 @@ io.on("connect", (socket) => {
 			socket.emit("current order", currentOrder);
 		} else if (message == 0) {
 			currentOrder = "";
+			save(sessionData);
 			socket.emit("cancel order");
 		} else {
 			invalid(socket);
@@ -102,14 +108,19 @@ io.on("connect", (socket) => {
 				currentOrder += current;
 			}
 			socket.emit("order added");
+			save(sessionData);
 			socket.emit("restart", currentOrder);
-			console.log(currentOrder);
 		} else {
 			invalid(socket);
 		}
 	});
 });
 
+function save(sessionData: any) {
+	sessionData.current = currentOrder;
+	sessionData.history = orderHistory;
+	sessionData.save();
+}
 function invalid(socket: Socket) {
 	socket.emit("invalid input", "Please enter a valid input");
 	socket.emit("restart", currentOrder);

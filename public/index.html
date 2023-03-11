@@ -100,8 +100,6 @@
 	<body>
 		<script src="socket.io/socket.io.js"></script>
 		<!--  -->
-		<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-
 		<div class="container">
 			<div class="display-texts">
 				<div class="bot-message-container"></div>
@@ -249,18 +247,7 @@
 				createFreshStart(null);
 			}
 
-			messageBox.addEventListener("submit", (e) => {
-				e.preventDefault();
-
-				axios
-					.post("/", {
-						headers: {
-							"Cache-Control": "no-cache",
-						},
-					})
-					.then((res) => console.log(res))
-					.catch((err) => console.log(err));
-			});
+			messageBox.addEventListener("submit", (e) => e.preventDefault());
 
 			function createFreshStart(currentOrder) {
 				let text = `
