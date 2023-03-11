@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 require("dotenv").config();
 const session = require("express-session");
+const MongoStore = require("connect-mongodb-session")(session);
 const express = require("express");
 const app = express();
 //create server
@@ -13,12 +14,15 @@ const io = require("socket.io")(server, {
 });
 const path = require("path");
 app.use(express.static(path.join(__dirname, "public")));
-const MemoryStore = session.MemoryStore;
+const store = new MongoStore({
+    uri: process.env.MONGO_URI,
+    collection: "sessions",
+});
 const sessionMiddleware = session({
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true,
-    store: new MemoryStore(),
+    store: store,
 });
 io.engine.use(sessionMiddleware);
 app.get("/", (req, res) => {

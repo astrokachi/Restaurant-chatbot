@@ -1,6 +1,7 @@
 require("dotenv").config();
 import { Socket } from "socket.io";
 const session = require("express-session");
+const MongoStore = require("connect-mongodb-session")(session);
 
 const express = require("express");
 const app = express();
@@ -15,12 +16,16 @@ const path = require("path");
 
 app.use(express.static(path.join(__dirname, "public")));
 
-const MemoryStore = session.MemoryStore;
+const store = new MongoStore({
+	uri: process.env.MONGO_URI,
+	collection: "sessions",
+ });
+
 const sessionMiddleware = session({
 	secret: process.env.SECRET,
 	resave: false,
 	saveUninitialized: true,
-	store: new MemoryStore(),
+	store: store,
 });
 io.engine.use(sessionMiddleware);
 
@@ -49,6 +54,9 @@ const foods = [
 ];
 // const swallow = ["Eba", "Pounded yam", "Semo"];
 // const soups = ["Efo riro", "Ewedu", "Egusi", "Oha"];
+
+
+
 io.on("connect", (socket: any) => {
 	console.log("Someone connected!", socket.id);
 
