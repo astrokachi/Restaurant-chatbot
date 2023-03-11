@@ -53,8 +53,8 @@ io.on("connect", (socket: any) => {
 
 	const sessionData = socket.request.session;
 
-	currentOrder = sessionData?.current ? sessionData.current : currentOrder;
-	orderHistory = sessionData?.history ? sessionData.history : orderHistory;
+	currentOrder = sessionData.current ? sessionData.current : currentOrder;
+	orderHistory = sessionData.history ? sessionData.history : orderHistory;
 	console.log(currentOrder, orderHistory);
 
 	// console.log(sessionData);
@@ -114,6 +114,7 @@ io.on("connect", (socket: any) => {
 });
 
 function save(sessionData: any) {
+	console.log(sessionData)
 	sessionData.current = currentOrder;
 	sessionData.history = orderHistory;
 	sessionData.save();

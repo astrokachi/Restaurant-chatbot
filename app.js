@@ -45,8 +45,8 @@ const foods = [
 io.on("connect", (socket) => {
     console.log("Someone connected!", socket.id);
     const sessionData = socket.request.session;
-    currentOrder = (sessionData === null || sessionData === void 0 ? void 0 : sessionData.current) ? sessionData.current : currentOrder;
-    orderHistory = (sessionData === null || sessionData === void 0 ? void 0 : sessionData.history) ? sessionData.history : orderHistory;
+    currentOrder = sessionData.current ? sessionData.current : currentOrder;
+    orderHistory = sessionData.history ? sessionData.history : orderHistory;
     console.log(currentOrder, orderHistory);
     // console.log(sessionData);
     socket.emit("check existing data", currentOrder);
@@ -110,6 +110,7 @@ io.on("connect", (socket) => {
     });
 });
 function save(sessionData) {
+    console.log(sessionData);
     sessionData.current = currentOrder;
     sessionData.history = orderHistory;
     sessionData.save();
