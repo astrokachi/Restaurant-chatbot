@@ -1,4 +1,6 @@
+require("dotenv").config();
 import { Socket } from "socket.io";
+const session = require("express-session");
 
 const express = require("express");
 const app = express();
@@ -9,18 +11,36 @@ const server = http.createServer(app);
 const io: Socket = require("socket.io")(server, { cors: { origin: "*" } });
 const path = require("path");
 
+let orderHistory: string[] = [];
+let currentOrder = "";
+
 app.use(express.static(path.join(__dirname, "public")));
 
+app.use(
+	session({
+		secret: process.env.SECRET,
+		resave: false,
+		saveUninitialized: true,
+	})
+);
+
 app.get("/", (req: any, res: any) => {
+	orderHistory = req.session.history;
+	currentOrder = req.session.current;
 	res.send("index.html");
+});
+
+
+app.post("/", (req: any, res: any) => {
+	req.session.history = orderHistory;
+	req.session.current = currentOrder;
+	res.end();
 });
 
 server.listen(3000, () => {
 	console.log("server is listening on port", 3000);
 });
 
-const orderHistory: string[] = [];
-let currentOrder = "";
 // do an api call to return random list of foods
 const foods = [
 	"Curry rice",
@@ -67,7 +87,7 @@ io.on("connect", (socket) => {
 			socket.emit("current order", currentOrder);
 		} else if (message == 0) {
 			currentOrder = "";
-			socket.emit('cancel order');
+			socket.emit("cancel order");
 		} else {
 			invalid(socket);
 		}
