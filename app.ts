@@ -33,7 +33,7 @@ app.get("/", (req: any, res: any) => {
 app.post("/", (req: any, res: any) => {
 	req.session.history = orderHistory;
 	req.session.current = currentOrder;
-	res.end();
+	res.send('updated');
 });
 
 server.listen(3000, () => {

@@ -173,7 +173,7 @@
 			}
 
 			socket.on("check existing data", (currentOrder) => {
-				console.log(currentOrder)
+				console.log(currentOrder);
 				createFreshStart(currentOrder);
 			});
 
@@ -252,9 +252,16 @@
 			messageBox.addEventListener("submit", (e) => {
 				e.preventDefault();
 
-				axios.post("/");
+				axios
+					.post("/", {
+						headers: {
+							"Cache-Control": "no-cache",
+						},
+					})
+					.then((res) => console.log(res))
+					.catch((err) => console.log(err));
 			});
-			
+
 			function createFreshStart(currentOrder) {
 				let text = `
 				${

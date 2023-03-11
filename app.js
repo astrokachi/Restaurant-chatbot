@@ -26,7 +26,7 @@ app.get("/", (req, res) => {
 app.post("/", (req, res) => {
     req.session.history = orderHistory;
     req.session.current = currentOrder;
-    res.end();
+    res.send('updated');
 });
 server.listen(3000, () => {
     console.log("server is listening on port", 3000);
