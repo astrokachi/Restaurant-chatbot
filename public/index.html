@@ -171,10 +171,10 @@
 					messageBox.removeChild(this.newButton);
 				}
 			}
-			socket.on("connect", () => {
-				socket.on("check existing data", (currentOrder) => {
-					createFreshStart(currentOrder);
-				});
+
+			socket.on("check existing data", (currentOrder) => {
+				console.log(currentOrder)
+				createFreshStart(currentOrder);
 			});
 
 			function sendMessage(val) {
@@ -254,6 +254,7 @@
 
 				axios.post("/");
 			});
+			
 			function createFreshStart(currentOrder) {
 				let text = `
 				${
