@@ -15,12 +15,13 @@ const path = require("path");
 
 app.use(express.static(path.join(__dirname, "public")));
 
+const MemoryStore = session.MemoryStore;
 const sessionMiddleware = session({
 	secret: process.env.SECRET,
 	resave: false,
 	saveUninitialized: true,
+	store: new MemoryStore(),
 });
-
 io.engine.use(sessionMiddleware);
 
 app.get("/", (req: any, res: any) => {
@@ -114,7 +115,7 @@ io.on("connect", (socket: any) => {
 });
 
 function save(sessionData: any) {
-	console.log(sessionData)
+	console.log(sessionData);
 	sessionData.current = currentOrder;
 	sessionData.history = orderHistory;
 	sessionData.save();
