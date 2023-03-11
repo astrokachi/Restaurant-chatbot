@@ -17,9 +17,6 @@ const sessionMiddleware = session({
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: {
-        _expires: 60 * 60 * 24,
-    },
 });
 io.engine.use(sessionMiddleware);
 app.get("/", (req, res) => {
@@ -48,8 +45,8 @@ const foods = [
 io.on("connect", (socket) => {
     console.log("Someone connected!", socket.id);
     const sessionData = socket.request.session;
-    currentOrder = sessionData.current ? sessionData.current : currentOrder;
-    orderHistory = sessionData.history ? sessionData.history : orderHistory;
+    currentOrder = (sessionData === null || sessionData === void 0 ? void 0 : sessionData.current) ? sessionData.current : currentOrder;
+    orderHistory = (sessionData === null || sessionData === void 0 ? void 0 : sessionData.history) ? sessionData.history : orderHistory;
     console.log(currentOrder, orderHistory);
     // console.log(sessionData);
     socket.emit("check existing data", currentOrder);

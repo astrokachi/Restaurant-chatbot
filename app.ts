@@ -19,9 +19,6 @@ const sessionMiddleware = session({
 	secret: process.env.SECRET,
 	resave: false,
 	saveUninitialized: true,
-	cookie: {
-		_expires: 60 * 60 * 24,
-	},
 });
 
 io.engine.use(sessionMiddleware);
@@ -56,8 +53,8 @@ io.on("connect", (socket: any) => {
 
 	const sessionData = socket.request.session;
 
-	currentOrder = sessionData.current ? sessionData.current : currentOrder;
-	orderHistory = sessionData.history ? sessionData.history : orderHistory;
+	currentOrder = sessionData?.current ? sessionData.current : currentOrder;
+	orderHistory = sessionData?.history ? sessionData.history : orderHistory;
 	console.log(currentOrder, orderHistory);
 
 	// console.log(sessionData);
