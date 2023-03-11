@@ -172,7 +172,9 @@
 				}
 			}
 			socket.on("connect", () => {
-				createFreshStart();
+				socket.on("check existing data", (currentOrder) => {
+					createFreshStart(currentOrder);
+				});
 			});
 
 			function sendMessage(val) {
@@ -250,7 +252,7 @@
 			messageBox.addEventListener("submit", (e) => {
 				e.preventDefault();
 
-				axios.post('/')
+				axios.post("/");
 			});
 			function createFreshStart(currentOrder) {
 				let text = `

@@ -30,7 +30,6 @@ app.get("/", (req: any, res: any) => {
 	res.send("index.html");
 });
 
-
 app.post("/", (req: any, res: any) => {
 	req.session.history = orderHistory;
 	req.session.current = currentOrder;
@@ -58,6 +57,7 @@ const foods = [
 // const soups = ["Efo riro", "Ewedu", "Egusi", "Oha"];
 io.on("connect", (socket) => {
 	console.log("Someone connected!", socket.id);
+	socket.emit("check existing data", { currentOrder: currentOrder });
 
 	socket.on("message", (message: number) => {
 		if (message == 1) {

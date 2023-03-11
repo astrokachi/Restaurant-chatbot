@@ -48,6 +48,7 @@ const foods = [
 // const soups = ["Efo riro", "Ewedu", "Egusi", "Oha"];
 io.on("connect", (socket) => {
     console.log("Someone connected!", socket.id);
+    socket.emit("check existing data", { currentOrder: currentOrder });
     socket.on("message", (message) => {
         if (message == 1) {
             socket.emit("place an order", foods);
