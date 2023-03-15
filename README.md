@@ -49,7 +49,11 @@
 
 - [x] When a customer selects “1”, the bot should return a list of items from the restaurant. It is up to you to create the items in your restaurant for the customer. The order items can have multiple options but the customer should be able to select the preferred items from the list using this same number select system and place an order.
 
-### A fully functional chatbot written in javascript designed to take your orders, respond and store them 
+
+
+## Implementation
+
+#### A fully functional chatbot written in javascript designed to take your orders, respond and store them 
 
 
 An interface is designed in a user friendly chat style for users choose from a list of commands and get response accordingly. The menu is as listed below:
