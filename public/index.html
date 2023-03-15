@@ -194,6 +194,7 @@
 					messageBox.appendChild(this.newButton);
 					this.newButton.addEventListener("click", () => {
 						sendMessage(val);
+						document.querySelector("input").value = "";
 					});
 				}
 
