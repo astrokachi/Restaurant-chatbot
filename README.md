@@ -1,5 +1,6 @@
 <!-- Project Shields -->
 
+<!--
 
 ### Built With:
 
@@ -8,12 +9,13 @@
 ![Javascript][javascript]
 ![Node.js][node]
 ![Express.js][express]
+![MongoDB][mongodb]
 ![Socket.io][Socket.io]
 ![CSS3][CSS3]
 ![HTML5][HTML5]
 
 </div>
-
+-->
 
 <div>
   <p align="center">
