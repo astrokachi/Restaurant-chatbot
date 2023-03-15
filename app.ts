@@ -30,12 +30,22 @@ const sessionMiddleware = session({
 	resave: false,
 	saveUninitialized: true,
 	store: store,
-	cookie: {
-		secure: true,
-		httpOnly: true,
-	},
+	// cookie: {
+	// 	secure: true,
+	// 	httpOnly: true,
+	// },
 });
 io.engine.use(sessionMiddleware);
+
+function generateId(length: number) {
+	let result = '';
+	const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+	const charactersLength = characters.length;
+	for (let i = 0; i < length; i++) {
+	  result += characters.charAt(Math.floor(Math.random() * charactersLength));
+	}
+	return result;
+ }
 
 app.get("/", (req: any, res: any) => {
 	res.send("index.html");
@@ -60,29 +70,27 @@ const foods = [
 	"Jollof rice",
 	"Swallow",
 ];
-// const swallow = ["Eba", "Pounded yam", "Semo"];
-// const soups = ["Efo riro", "Ewedu", "Egusi", "Oha"];
+
 
 io.on("connect", (socket: any) => {
-	console.log("Someone connected!", socket.id);
+	// console.log("Someone connected!", socket.id);
 
 	const sessionData = socket.request.session;
-	let sessionId = socket.request.session.id;
+	let sessionId = generateId(13)
 
 	currentOrder[sessionId] = sessionData.current ? sessionData.current : "";
 	orderHistory[sessionId] = sessionData.history ? sessionData.history : [];
-	console.log(currentOrder[sessionId], orderHistory[sessionId]);
+	console.log(sessionId);
 
-	// console.log(sessionData);
+	console.log(sessionData);
 	socket.emit("check existing data", currentOrder[sessionId]);
 
 	socket.on("message", (message: number) => {
 		if (message == 1) {
 			socket.emit("place an order", foods);
 		} else if (message == 99) {
-			if (currentOrder[sessionId]?.length > 0) {
-				orderHistory[sessionId]?.push(currentOrder[sessionId]);
-
+			if (currentOrder[sessionId].length > 0) {
+				orderHistory[sessionId].push(currentOrder[sessionId]);
 				currentOrder[sessionId] = "";
 				save(sessionData, sessionId);
 				socket.emit("order placed", "order placed");
@@ -130,9 +138,9 @@ io.on("connect", (socket: any) => {
 });
 
 function save(sessionData: any, sessionId: string) {
-	console.log(sessionData);
 	sessionData.current = currentOrder[sessionId];
 	sessionData.history = orderHistory[sessionId];
+	console.log("save", sessionData);
 	sessionData.save();
 }
 function invalid(socket: Socket) {

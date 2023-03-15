@@ -26,12 +26,21 @@ const sessionMiddleware = session({
     resave: false,
     saveUninitialized: true,
     store: store,
-    cookie: {
-        secure: true,
-        httpOnly: true,
-    },
+    // cookie: {
+    // 	secure: true,
+    // 	httpOnly: true,
+    // },
 });
 io.engine.use(sessionMiddleware);
+function generateId(length) {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+}
 app.get("/", (req, res) => {
     res.send("index.html");
 });
@@ -53,25 +62,23 @@ const foods = [
     "Jollof rice",
     "Swallow",
 ];
-// const swallow = ["Eba", "Pounded yam", "Semo"];
-// const soups = ["Efo riro", "Ewedu", "Egusi", "Oha"];
 io.on("connect", (socket) => {
-    console.log("Someone connected!", socket.id);
+    // console.log("Someone connected!", socket.id);
     const sessionData = socket.request.session;
-    let sessionId = socket.request.session.id;
+    let sessionId = generateId(13);
     currentOrder[sessionId] = sessionData.current ? sessionData.current : "";
     orderHistory[sessionId] = sessionData.history ? sessionData.history : [];
-    console.log(currentOrder[sessionId], orderHistory[sessionId]);
-    // console.log(sessionData);
+    console.log(sessionId);
+    console.log(sessionData);
     socket.emit("check existing data", currentOrder[sessionId]);
     socket.on("message", (message) => {
-        var _a, _b, _c;
+        var _a;
         if (message == 1) {
             socket.emit("place an order", foods);
         }
         else if (message == 99) {
-            if (((_a = currentOrder[sessionId]) === null || _a === void 0 ? void 0 : _a.length) > 0) {
-                (_b = orderHistory[sessionId]) === null || _b === void 0 ? void 0 : _b.push(currentOrder[sessionId]);
+            if (currentOrder[sessionId].length > 0) {
+                orderHistory[sessionId].push(currentOrder[sessionId]);
                 currentOrder[sessionId] = "";
                 save(sessionData, sessionId);
                 socket.emit("order placed", "order placed");
@@ -81,7 +88,7 @@ io.on("connect", (socket) => {
             }
         }
         else if (message == 98) {
-            if (((_c = orderHistory[sessionId]) === null || _c === void 0 ? void 0 : _c.length) > 0) {
+            if (((_a = orderHistory[sessionId]) === null || _a === void 0 ? void 0 : _a.length) > 0) {
                 socket.emit("return checkout history", {
                     orderHistory: orderHistory[sessionId],
                     currentOrder: currentOrder[sessionId],
@@ -126,9 +133,9 @@ io.on("connect", (socket) => {
     });
 });
 function save(sessionData, sessionId) {
-    console.log(sessionData);
     sessionData.current = currentOrder[sessionId];
     sessionData.history = orderHistory[sessionId];
+    console.log("save", sessionData);
     sessionData.save();
 }
 function invalid(socket) {
