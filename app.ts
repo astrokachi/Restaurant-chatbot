@@ -30,10 +30,6 @@ const sessionMiddleware = session({
 	resave: false,
 	saveUninitialized: true,
 	store: store,
-	// cookie: {
-	// 	secure: true,
-	// 	httpOnly: true,
-	// },
 });
 io.engine.use(sessionMiddleware);
 
@@ -116,7 +112,7 @@ io.on("connect", (socket: any) => {
 			save(sessionData, sessionId);
 			socket.emit("cancel order");
 		} else {
-			invalid(socket);
+			invalid(socket, sessionId);
 		}
 	});
 
@@ -131,8 +127,8 @@ io.on("connect", (socket: any) => {
 			socket.emit("order added");
 			save(sessionData, sessionId);
 			socket.emit("restart", currentOrder[sessionId]);
-		} else {
-			invalid(socket);
+		} else { 
+			invalid(socket, sessionId);
 		}
 	});
 });
@@ -143,7 +139,7 @@ function save(sessionData: any, sessionId: string) {
 	console.log("save", sessionData);
 	sessionData.save();
 }
-function invalid(socket: Socket) {
+function invalid(socket: Socket, sessionId: string) {
 	socket.emit("invalid input", "Please enter a valid input");
-	socket.emit("restart", currentOrder[socket.id]);
+	socket.emit("restart", currentOrder[sessionId]);
 }

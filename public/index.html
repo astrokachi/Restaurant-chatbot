@@ -154,6 +154,10 @@
 					this.newMessage = document.createElement("div");
 					this.messageContainer = document.createElement("div");
 					displayTexts.append(this.createNewMessageEl());
+					displayTexts.scrollTo({
+						behavior: "smooth",
+						top: 10000000000,
+					});
 				}
 
 				createNewMessageEl() {
@@ -170,11 +174,13 @@
 					this.text = text;
 					this.newMessage = document.createElement("div");
 					this.messageContainer = document.createElement("div");
-					displayTexts.append(this.createNewMessageEl());
-					displayTexts.scrollTo({
-						behavior: "smooth",
-						top: 100000000,
-					});
+					setTimeout(() => {
+						displayTexts.append(this.createNewMessageEl());
+						displayTexts.scrollTo({
+							behavior: "smooth",
+							top: 10000000000,
+						});
+					}, 1000);
 				}
 
 				createNewMessageEl() {
@@ -289,7 +295,7 @@
 				${
 					currentOrder && currentOrder.length > 0
 						? `<div>You have a pending checkout, would you like to add more orders or checkout?</div>`
-						: "<div>Hello, welcome to the restaurant. What can I do for you?</div>"
+						: "<div>What can I do for you?</div>"
 				}
 			      	<div>Select 1 to Place an order</div>
 			         <div>Select 99 to checkout order</div>
